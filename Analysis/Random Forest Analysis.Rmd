@@ -31,24 +31,10 @@ h4.date {
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Load Data
-
-```{r, message=FALSE}
+```{r, include=FALSE}
 # load necessary libraries
 library(tidyverse)
 ```
-
-```{r}
-# load data from local files
-my_gapminder <- read_csv("../Data/my_gapminder.csv")
-my_penguins <- read_csv("../Data/my_penguins.csv")
-```
-
-```{r}
-# load my_rf_cv function
-source("../Code/my_rf_cv.R")
-```
-
 # ```my_rf_cv``` Tutorial
 
 This function uses the ```my_penguins``` data internally and trains a random 
@@ -57,7 +43,17 @@ forest model which predicts ```body_mass_g``` using covariates ```bill_length_mm
 so we will run our function using 2-fold, 5-fold, and 10-fold cross validation. 
 We generate 30 iterations of a random forest model for each value of $k$.
 
+```{r, include=FALSE}
+# load data from local files
+my_penguins <- read_csv("../Data/my_penguins.csv")
+```
+
 ```{r}
+# load my_rf_cv function
+source("../Code/my_rf_cv.R")
+```
+
+```{r, warning=FALSE}
 # store results in a data frame
 mse_df <- data.frame(matrix(nrow = 0, ncol = length(2))) 
 # run model on 2, 5, and 10 folds
@@ -75,10 +71,18 @@ for (folds in c(2, 5, 10)) {
 }
 ```
 
+```{r, include=FALSE}
+# save simulation results locally
+simulation_results <- data.frame(mse_2_fold = mse_df[1:30, 1],
+                                 mse_5_fold = mse_df[31:60, 1],
+                                 mse_10_fold = mse_df[61:90, 1])
+write_csv(simulation_results, file = "../Output/Results/simulation_results.csv")
+```
+
 We generate boxplots of the data to visualize the distribution of the average
 mean squared error for each of the chosen number of folds. 
 
-```{r,  fig.width=7}
+```{r}
 # create boxplot, 2-fold cv
 plot_2cv <- ggplot2::ggplot(data = mse_df[1:30,], ggplot2::aes(x = fold, y = mse)) +
   ggplot2::labs(title = "Average Mean Squared Error, 30 Simulations", 
@@ -88,7 +92,7 @@ plot_2cv <- ggplot2::ggplot(data = mse_df[1:30,], ggplot2::aes(x = fold, y = mse
   ggplot2::theme_bw() 
 
 # create boxplot, 5-fold cv
-ggplot2::ggplot(data = mse_df[31:60,], ggplot2::aes(x = fold, y = mse)) +
+plot_5cv <- ggplot2::ggplot(data = mse_df[31:60,], ggplot2::aes(x = fold, y = mse)) +
   ggplot2::labs(title = "Average Mean Squared Error, 30 Simulations", 
                 x = "Number of Folds",
                 y = "Mean Squared Error") +
@@ -96,14 +100,28 @@ ggplot2::ggplot(data = mse_df[31:60,], ggplot2::aes(x = fold, y = mse)) +
   ggplot2::theme_bw() 
 
 # create boxplot, 10-fold cv
-ggplot2::ggplot(data = mse_df[61:90,], ggplot2::aes(x = fold, y = mse)) +
+plot_10cv <- ggplot2::ggplot(data = mse_df[61:90,], ggplot2::aes(x = fold, y = mse)) +
   ggplot2::labs(title = "Average Mean Squared Error, 30 Simulations", 
                 x = "Number of Folds",
                 y = "Mean Squared Error") +
   ggplot2::geom_boxplot(fill = "lightblue") +
   ggplot2::theme_bw() 
-
 ```
+
+```{r, include=FALSE}
+# save boxplots locally 
+ggsave("../Output/Figures/plot_2cv.png", plot_2cv)
+ggsave("../Output/Figures/plot_5cv.png", plot_5cv)
+ggsave("../Output/Figures/plot_10cv.png", plot_10cv)
+```
+
+```{r}
+# display boxplots
+plot_2cv
+plot_5cv
+plot_10cv
+```
+
 
 We can see that as the number of folds increases, the range of values for the 
 average mean squared error decreases.
@@ -119,6 +137,11 @@ results_table <- cbind(avg_col, sd_col)
 rownames(results_table) <- c("2-fold CV", "5-fold CV", "10-fold CV")
 colnames(results_table) <- c("Mean of MSE", "Standard Deviation of MSE")
 results_table
+```
+
+```{r, include=FALSE}
+# save table locally 
+saveRDS(results_table, "../Output/Results/summary_statistics.rds")
 ```
 
 We can see that as the number of folds increases, the mean MSE decreases
