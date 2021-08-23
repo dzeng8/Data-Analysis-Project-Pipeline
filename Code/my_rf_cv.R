@@ -22,9 +22,9 @@ my_rf_cv <- function(k) {
   # load penguin data
   data("my_penguins")
   data <- my_penguins[c("bill_length_mm",
-                     "bill_depth_mm",
-                     "flipper_length_mm",
-                     "body_mass_g")]
+                        "bill_depth_mm",
+                        "flipper_length_mm",
+                        "body_mass_g")]
   # remove NAs from data
   data <- na.omit(data)
   fold <- sample(rep(1:k, length = nrow(data)))
@@ -34,8 +34,8 @@ my_rf_cv <- function(k) {
     train_split <- data[fold != i,]
     test_split <- data[fold == i,]
     model <- randomForest::randomForest(body_mass_g ~ bill_length_mm + bill_depth_mm + flipper_length_mm,
-                          data = train_split,
-                          ntree = 100)
+                                        data = train_split,
+                                        ntree = 100)
     # generate predictions of body_mass_g based on test split
     predictions <- predict(model, test_split[, -4])
     true <- test_split[, 4]
